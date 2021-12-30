@@ -44,6 +44,7 @@
 #include <drm/drm_print.h>
 
 #include "drm_crtc_internal.h"
+#include "drm_modes_low_dotclock.h"
 
 /**
  * drm_mode_debug_printmodeline - print a mode to dmesg
@@ -1482,7 +1483,7 @@ static int drm_mode_parse_cmdline_res_mode(const char *str, unsigned int length,
 					   struct drm_cmdline_mode *mode)
 {
 	const char *str_start = str;
-	bool rb = false, cvt = false;
+	bool rb = false, cvt = false, low_dotclock = false;
 	int xres = 0, yres = 0;
 	int remaining, i;
 	char *end_ptr;
@@ -1512,6 +1513,12 @@ static int drm_mode_parse_cmdline_res_mode(const char *str, unsigned int length,
 		case 'R':
 			rb = true;
 			break;
+		case 'S':
+		case 'c':
+		case 'z':
+			low_dotclock = true;
+			DRM_DEBUG_KMS("Found one of the S/c/z low dotclock mode flag");
+			break;
 		default:
 			/*
 			 * Try to pass that to our extras parsing
@@ -1536,6 +1543,7 @@ static int drm_mode_parse_cmdline_res_mode(const char *str, unsigned int length,
 	mode->yres = yres;
 	mode->cvt = cvt;
 	mode->rb = rb;
+	mode->low_dotclock = low_dotclock;
 
 	return 0;
 }
@@ -1865,7 +1873,11 @@ drm_mode_create_from_cmdline_mode(struct drm_device *dev,
 {
 	struct drm_display_mode *mode;
 
-	if (cmd->cvt)
+	if (cmd->low_dotclock)
+		mode = drm_mode_low_dotclock_res(dev,
+				    cmd->xres, cmd->yres,
+				    cmd->interlace);
+	else if (cmd->cvt)
 		mode = drm_cvt_mode(dev,
 				    cmd->xres, cmd->yres,
 				    cmd->refresh_specified ? cmd->refresh : 60,

@@ -348,8 +348,10 @@ static void drm_update_vblank_count(struct drm_device *dev, unsigned int pipe,
 		    diff, cur_vblank, vblank->last);
 
 	if (diff == 0) {
-		drm_WARN_ON_ONCE(dev, cur_vblank != vblank->last);
-		return;
+		// fix interlaced vblank
+		//drm_WARN_ON_ONCE(dev, cur_vblank != vblank->last);
+		//return;
+		diff = 1;
 	}
 
 	/*
