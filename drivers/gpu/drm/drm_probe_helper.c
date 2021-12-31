@@ -517,7 +517,7 @@ retry:
 	if (count == 0 && connector->status == connector_status_connected)
 		count = drm_add_override_edid_modes(connector);
 
-	if (count == 0 && connector->status == connector_status_connected ||
+	if (count == 0 && (connector->status == connector_status_connected ||
 	   connector->status == connector_status_unknown) &&
 +	   ! cmdline_mode->low_dotclock)
 		count = drm_add_modes_noedid(connector, 1024, 768);
